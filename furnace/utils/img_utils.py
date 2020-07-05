@@ -3,6 +3,9 @@ import numpy as np
 import numbers
 import random
 import collections
+import torchvision.transforms.functional as TF
+from PIL import Image
+from matplotlib import pyplot as plt
 
 
 def get_2dshape(shape, *, zero=True):
@@ -202,3 +205,15 @@ def findContours(*args, **kwargs):
             'cv2 must be either version 3 or 4 to call this method')
 
     return contours, hierarchy
+
+def random_rotate(image, gt, min_degree, max_degree):
+    if random.random() >= 0.5:
+        image = Image.fromarray(image)
+        gt = Image.fromarray(gt)
+        angle = np.random.randint(low=min_degree, high=max_degree)
+        image = TF.rotate(image, angle)
+        gt = TF.rotate(gt, angle, fill=(0,))
+        image = np.array(image)
+        gt = np.array(gt)
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+    return image, gt

@@ -35,11 +35,12 @@ C.val_log_file = C.log_dir + '/val_' + exp_time + '.log'
 C.link_val_log_file = C.log_dir + '/val_last.log'
 
 """Data Dir and Weight Dir"""
-C.dataset_path = osp.join(C.abs_dir, 'cil')
-C.img_root_folder = osp.join(C.dataset_path, 'training/training/images/')
-C.gt_root_folder = osp.img_root_folder
-C.train_source = osp.join(C.dataset_path, "images/training.txt")
-C.eval_source = osp.join(C.dataset_path, "images/validation.txt")
+C.dataset_path = osp.join(C.root_dir, 'cil')
+# C.img_root_folder = osp.join(C.dataset_path, 'training/images/')
+C.img_root_folder = C.dataset_path
+C.gt_root_folder = C.dataset_path
+C.train_source = osp.join(C.dataset_path, "train.txt")
+C.eval_source = osp.join(C.dataset_path, "val.txt")
 C.is_test = False
 
 """Path Config"""
@@ -52,6 +53,7 @@ def add_path(path):
 
 add_path(osp.join(C.root_dir, 'furnace'))
 
+from utils.pyt_utils import model_urls
 
 """Image Config"""
 C.num_classes = 2
@@ -70,15 +72,16 @@ C.fix_bn = False
 C.sync_bn = True
 C.bn_eps = 1e-5
 C.bn_momentum = 0.1
-C.pretrained_model = osp.join(C.abs_dir, model_zoo, "resnet50_v1c.pth")
+C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet50_v1c.pth")
+
 
 """Train Config"""
 C.lr = 1e-3
 C.lr_power = 0.9
 C.momentum = 0.9
 C.weight_decay = 1e-4
-C.batch_size = 16
-C.nepochs = 1000
+C.batch_size = 4
+C.nepochs = 120
 C.niters_per_epoch = int(np.ceil(C.num_train_imgs // C.batch_size))
 C.num_workers = 24
 C.train_scale_array = [0.5, 0.75, 1, 1.5, 1.75, 2]
@@ -92,7 +95,7 @@ C.eval_base_size = 480
 C.eval_crop_size = 480
 
 """Display Config"""
-C.snapshot_iter = 50
+C.snapshot_iter = 10
 C.record_info_iter = 20
 C.display_iter = 50
 
