@@ -13,7 +13,7 @@ from seg_opr.seg_oprs import ConvBnRelu
 
 class PSPNet(nn.Module):
     def __init__(self, out_planes, criterion, pretrained_model=None,
-                 norm_layer=nn.BatchNorm2d):
+                 norm_layer=nn.BatchNorm2d, is_training=True):
         super(PSPNet, self).__init__()
         self.backbone = resnet50(pretrained_model, norm_layer=norm_layer,
                                  bn_eps=config.bn_eps,
@@ -36,6 +36,7 @@ class PSPNet(nn.Module):
         self.business_layer.append(self.aux_layer)
 
         self.criterion = criterion
+        self.is_training = is_training
 
     def forward(self, data, label=None):
         blocks = self.backbone(data)
@@ -50,7 +51,7 @@ class PSPNet(nn.Module):
         psp_fm = F.log_softmax(psp_fm, dim=1)
         aux_fm = F.log_softmax(aux_fm, dim=1)
 
-        if label is not None:
+        if label is not None and self.is_training:
             loss = self.criterion(psp_fm, label)
             aux_loss = self.criterion(aux_fm, label)
             loss = loss + 0.4 * aux_loss

@@ -41,6 +41,7 @@ C.img_root_folder = C.dataset_path
 C.gt_root_folder = C.dataset_path
 C.train_source = osp.join(C.dataset_path, "train.txt")
 C.eval_source = osp.join(C.dataset_path, "val.txt")
+C.test_source = osp.join(C.dataset_path, "test.txt")
 C.is_test = False
 
 """Path Config"""
@@ -60,9 +61,9 @@ C.num_classes = 2
 C.background = -1
 C.image_mean = np.array([0.485, 0.456, 0.406])  # 0.485, 0.456, 0.406
 C.image_std = np.array([0.229, 0.224, 0.225])
-C.target_size = 480 # not used?
 C.image_height = 400
 C.image_width = 400
+C.gt_down_sampling = 1
 C.num_train_imgs = 90
 C.num_eval_imgs = 10
 
@@ -81,7 +82,7 @@ C.lr_power = 0.9
 C.momentum = 0.9
 C.weight_decay = 1e-4
 C.batch_size = 4
-C.nepochs = 120
+C.nepochs = 600
 C.niters_per_epoch = int(np.ceil(C.num_train_imgs // C.batch_size))
 C.num_workers = 24
 C.train_scale_array = [0.5, 0.75, 1, 1.5, 1.75, 2]
@@ -91,12 +92,14 @@ C.eval_iter = 30
 C.eval_stride_rate = 2 / 3
 C.eval_scale_array = [1, ]
 C.eval_flip = False
-C.eval_base_size = 480
-C.eval_crop_size = 480
+C.eval_height = 400
+C.eval_width = 400
+# C.eval_base_size = 480
+# C.eval_crop_size = 480
 
 """Display Config"""
-C.snapshot_iter = 10
-C.record_info_iter = 20
+C.snapshot_iter = 50
+C.record_info_iter = 50
 C.display_iter = 50
 
 

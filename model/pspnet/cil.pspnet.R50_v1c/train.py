@@ -113,8 +113,9 @@ with Engine(custom_parser=parser) as engine:
 
             pbar.set_description(print_str, refresh=False)
 
-        if (epoch >= config.nepochs - 20) or (
-                epoch % config.snapshot_iter == 0):
+        # if (epoch >= config.nepochs - 20) or (
+        #         epoch % config.snapshot_iter == 0):
+        if (epoch+1) % config.snapshot_iter == 0:
             engine.save_and_link_checkpoint(config.snapshot_dir,
                                             config.log_dir,
                                             config.log_dir_link)

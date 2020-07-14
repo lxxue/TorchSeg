@@ -15,6 +15,7 @@ class CIL(data.Dataset):
         self._gt_path = setting['gt_root']
         self._train_source = setting['train_source']
         self._eval_source = setting['eval_source']
+        self._test_source = setting['test_source']
         self._file_names = self._get_file_names(split_name)
         # self._file_length = file_length
         self._file_length = len(self._file_names)
@@ -64,10 +65,13 @@ class CIL(data.Dataset):
         return img, gt
 
     def _get_file_names(self, split_name):
-        assert split_name in ['train', 'val']
-        source = self._train_source
-        if split_name == "val":
+        assert split_name in ['train', 'val', 'test']
+        if split_name == 'train':
+            source = self._train_source
+        elif split_name == "val":
             source = self._eval_source
+        else:
+            source = self._test_source
 
         file_names = []
         with open(source) as f:
