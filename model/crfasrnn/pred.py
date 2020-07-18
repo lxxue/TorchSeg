@@ -72,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     all_dev = parse_devices(args.devices)
 
-    network = CrfRnnNet(config.num_classes, n_iter=10)   #todo
+    network = CrfRnnNet(config.num_classes, n_iter=5)
     
     data_setting = {'img_root': config.img_root_folder,
                     'gt_root': config.gt_root_folder,
