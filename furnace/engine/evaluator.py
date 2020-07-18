@@ -19,7 +19,7 @@ logger = get_logger()
 class Evaluator(object):
     def __init__(self, dataset, class_num, image_mean, image_std, network,
                  multi_scales, is_flip, devices,
-                 verbose=False, save_path=None, show_image=False):
+                 verbose=False, save_path=None, output_prob=True):
         self.dataset = dataset
         self.ndata = self.dataset.get_length()
         self.class_num = class_num
@@ -38,7 +38,8 @@ class Evaluator(object):
         self.save_path = save_path
         if save_path is not None:
             ensure_dir(save_path)
-        self.show_image = show_image
+        
+        self.output_prob = output_prob
 
     def run(self, model_path, model_indice, log_file, log_file_link):
         """There are four evaluation modes:
@@ -178,7 +179,10 @@ class Evaluator(object):
                               (output_size[1], output_size[0]),
                               interpolation=cv2.INTER_LINEAR)
 
-        pred = pred.argmax(2)
+        if self.output_prob:
+            pred = pred[:, :, 1]
+        else:
+            pred = pred.argmax(2)
 
         return pred
 
@@ -255,22 +259,23 @@ class Evaluator(object):
     def val_func_process(self, input_data, device=None):
         input_data = np.ascontiguousarray(input_data[None, :, :, :],
                                           dtype=np.float32)
-        input_data = torch.tensor(input_data, device=device)
+        # input_data = torch.tensor(input_data, device=device) #gpu
+        input_data = torch.FloatTensor(input_data)
 
-        with torch.cuda.device(input_data.get_device()):
-            self.val_func.eval()
-            self.val_func.to(input_data.get_device())
-            with torch.no_grad():
-                score = self.val_func(input_data)
-                score = score[0]
+        # with torch.cuda.device(input_data.get_device()): #gpu
+        self.val_func.eval()
+        # self.val_func.to(input_data.get_device())
+        with torch.no_grad():
+            score = self.val_func(input_data)
+            score = score[0]
 
-                if self.is_flip:
-                    input_data = input_data.flip(-1)
-                    score_flip = self.val_func(input_data)
-                    score_flip = score_flip[0]
-                    score += score_flip.flip(-1)
-                score = torch.exp(score)
-                # score = score.data
+            if self.is_flip:
+                input_data = input_data.flip(-1)
+                score_flip = self.val_func(input_data)
+                score_flip = score_flip[0]
+                score += score_flip.flip(-1)
+            score = torch.exp(score)
+            # score = score.data
 
         return score
 

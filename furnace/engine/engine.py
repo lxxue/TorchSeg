@@ -56,17 +56,17 @@ class Engine(object):
 
         self.continue_state_object = self.args.continue_fpath
 
-        if 'WORLD_SIZE' in os.environ:
-            self.distributed = int(os.environ['WORLD_SIZE']) > 1
+        # if 'WORLD_SIZE' in os.environ:
+        #     self.distributed = int(os.environ['WORLD_SIZE']) > 1
 
-        if self.distributed:
-            self.local_rank = self.args.local_rank
-            self.world_size = int(os.environ['WORLD_SIZE'])
-            torch.cuda.set_device(self.local_rank)
-            dist.init_process_group(backend="nccl", init_method='env://')
-            self.devices = [i for i in range(self.world_size)]
-        else:
-            self.devices = parse_devices(self.args.devices)
+        # if self.distributed:
+        #     self.local_rank = self.args.local_rank
+        #     self.world_size = int(os.environ['WORLD_SIZE'])
+        #     torch.cuda.set_device(self.local_rank)
+        #     dist.init_process_group(backend="nccl", init_method='env://')
+        #     self.devices = [i for i in range(self.world_size)]
+        # else:
+        #     self.devices = parse_devices(self.args.devices)
 
     def inject_default_parser(self):
         p = self.parser
@@ -119,7 +119,7 @@ class Engine(object):
         if not osp.exists(log_dir_link):
             link_file(log_dir, log_dir_link)
         current_epoch_checkpoint = osp.join(snapshot_dir, 'epoch-{}.pth'.format(
-            self.state.epoch+1))
+            self.state.epoch))
         self.save_checkpoint(current_epoch_checkpoint)
         last_epoch_checkpoint = osp.join(snapshot_dir,
                                          'epoch-last.pth')
