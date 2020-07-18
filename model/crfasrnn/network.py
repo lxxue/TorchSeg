@@ -11,7 +11,6 @@ from base_model import resnet50
 from seg_opr.seg_oprs import ConvBnRelu
 
 from crfrnn import CrfRnn
-from fcn8s import Fcn8s
 
 class CrfRnnNet(nn.Module):
     def __init__(self, out_planes, criterion=None, pretrained_model=None,
@@ -29,6 +28,8 @@ class CrfRnnNet(nn.Module):
         # print("after crfrnn:", out.shape)    #debug
         
         if label is not None:
+            psp_fm = F.log_softmax(psp_fm, dim=1)
+            aux_fm = F.log_softmax(aux_fm, dim=1)
             psp_loss = self.criterion(psp_fm, label)
             aux_loss = self.criterion(aux_fm, label)
             crf_loss = self.criterion(out, label)
