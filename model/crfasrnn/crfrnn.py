@@ -75,7 +75,7 @@ class CrfRnn(nn.Module):
 
         # Compatibility transform matrix
         self.compatibility_matrix = nn.Parameter(
-            torch.eye(num_labels, dtype=torch.float32)
+            torch.rot90( torch.eye(num_labels, dtype=torch.float32) )
         )
 
     def _forward(self, image, logits):
@@ -100,13 +100,15 @@ class CrfRnn(nn.Module):
             image, alpha=self.params.alpha, beta=self.params.beta
         )
         _, h, w = image.shape
-        cur_logits = logits
+        
+        unaries = logits
+        # Initialization
+        if self.num_iterations>0:
+            q_values = F.softmax(unaries, dim=0)
+        else:
+            q_values = unaries
 
         for _ in range(self.num_iterations):
-            # print("DANGER!")    #debug
-            # Normalization
-            q_values = F.softmax(cur_logits, dim=0)
-
             # Spatial filtering
             spatial_out = torch.mm(
                 self.spatial_ker_weights,
@@ -119,18 +121,23 @@ class CrfRnn(nn.Module):
                 bilateral_filter.apply(q_values).view(self.num_labels, -1),
             )
 
-            # Compatibility transform
+            # Weighting filter outputs
             msg_passing_out = (
                 spatial_out + bilateral_out
             )  # Shape: (self.num_labels, -1)
-            msg_passing_out = torch.mm(self.compatibility_matrix, msg_passing_out).view(
+
+            # Compatibility transform
+            pairwise = torch.mm(self.compatibility_matrix, msg_passing_out).view(
                 self.num_labels, h, w
             )
 
             # Adding unary potentials
-            cur_logits = msg_passing_out + logits
+            q_values = unaries - pairwise
 
-        return torch.unsqueeze(cur_logits, 0)
+            # Normalization
+            q_values = F.softmax(q_values, dim=0)
+
+        return torch.unsqueeze(q_values, 0)
 
     def forward(self, image, logits):
         res = torch.zeros(1, config.num_classes, logits.shape[2], logits.shape[3])
