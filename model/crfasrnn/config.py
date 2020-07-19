@@ -74,7 +74,6 @@ C.sync_bn = True
 C.bn_eps = 1e-5
 C.bn_momentum = 0.1
 C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet50_v1c.pth")
-# C.pretrained_model = None
 
 
 """Train Config"""
@@ -82,10 +81,10 @@ C.lr = 1e-3
 C.lr_power = 0.9
 C.momentum = 0.9
 C.weight_decay = 1e-4
-C.batch_size = 4
-C.nepochs = 1000
+C.batch_size = 3
+C.nepochs = 4000
 C.niters_per_epoch = int(np.ceil(C.num_train_imgs // C.batch_size))
-C.num_workers = 0
+C.num_workers = 8
 C.train_scale_array = [0.5, 0.75, 1, 1.5, 1.75, 2]
 
 """Eval Config"""

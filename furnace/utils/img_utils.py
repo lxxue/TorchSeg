@@ -105,14 +105,20 @@ def resize_ensure_shortest_edge(img, edge_length,
     return img
 
 
-def random_scale(img, gt, scales):
+def random_scale(img, gt, scales, edge=None, midline=None):
+    assert (edge is None and midline is None) or (edge is not None and midline is not None)
     scale = random.choice(scales)
     sh = int(img.shape[0] * scale)
     sw = int(img.shape[1] * scale)
     img = cv2.resize(img, (sw, sh), interpolation=cv2.INTER_LINEAR)
     gt = cv2.resize(gt, (sw, sh), interpolation=cv2.INTER_NEAREST)
 
-    return img, gt, scale
+    if edge is not None and midline is not None:
+        edge = cv2.resize(edge, (sw, sh), interpolation=cv2.INTER_LINEAR)
+        midline = cv2.resize(midline, (sw, sh), interpolation=cv2.INTER_NEAREST)
+        return img, gt, scale, edge, midline
+    else:
+        return img, gt, scale
 
 
 def random_scale_with_length(img, gt, length):
@@ -125,12 +131,20 @@ def random_scale_with_length(img, gt, length):
     return img, gt, size
 
 
-def random_mirror(img, gt):
+def random_mirror(img, gt, edge=None, midline=None):
+    assert (edge is None and midline is None) or (edge is not None and midline is not None)
     if random.random() >= 0.5:
         img = cv2.flip(img, 1)
         gt = cv2.flip(gt, 1)
+        if edge is not None and midline is not None:
+            edge = cv2.flip(edge, 1)
+            midline = cv2.flip(midline, 1)
 
-    return img, gt,
+
+    if edge is not None and midline is not None:
+        return img, gt, edge, midline
+    else:
+        return img, gt
 
 
 def random_rotation(img, gt):
@@ -206,14 +220,24 @@ def findContours(*args, **kwargs):
 
     return contours, hierarchy
 
-def random_rotate(image, gt, min_degree, max_degree):
+def random_rotate(image, gt, edge=None, midline=None, min_degree=-180, max_degree=180):
+    assert (edge is None and midline is None) or (edge is not None and midline is not None)
     if random.random() >= 0.5:
         image = Image.fromarray(image)
         gt = Image.fromarray(gt)
         angle = np.random.randint(low=min_degree, high=max_degree)
         image = TF.rotate(image, angle)
-        gt = TF.rotate(gt, angle, fill=(0,))
+        gt = TF.rotate(gt, angle, fill=(-1,))
         image = np.array(image)
         gt = np.array(gt)
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-    return image, gt
+        if edge is not None and midline is not None:
+            edge = Image.fromarray(edge)
+            midline = Image.fromarray(midline)
+            edge = TF.rotate(edge, angle, fill=(-1,))
+            midline = TF.rotate(midline, angle, fill=(-1,))
+            edge = np.array(edge)
+            midline = np.array(midline)
+    if edge is not None and midline is not None:
+        return image, gt, edge, midline
+    else:
+        return image, gt
