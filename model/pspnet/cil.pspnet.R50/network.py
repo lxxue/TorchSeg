@@ -48,8 +48,8 @@ class PSPNet(nn.Module):
                                align_corners=True)
         aux_fm = F.interpolate(aux_fm, scale_factor=8, mode='bilinear',
                                align_corners=True)
-        psp_fm = F.log_softmax(psp_fm, dim=1)
-        aux_fm = F.log_softmax(aux_fm, dim=1)
+        # psp_fm = F.log_softmax(psp_fm, dim=1)
+        # aux_fm = F.log_softmax(aux_fm, dim=1)
 
         if label is not None and self.is_training:
             loss = self.criterion(psp_fm, label)
