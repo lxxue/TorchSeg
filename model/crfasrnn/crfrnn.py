@@ -31,6 +31,8 @@ from crfasrnn.params import DenseCRFParams
 
 from config import config
 
+_CPU = torch.device("cpu")
+
 class CrfRnn(nn.Module):
     """
     PyTorch implementation of the CRF-RNN module described in the paper:
@@ -140,6 +142,10 @@ class CrfRnn(nn.Module):
         if self.num_iterations==0:
             return logits
         
+        # move to cpu
+        image = image.to(_CPU)
+        logits = logits.to(_CPU)
+
         res = torch.zeros(1, config.num_classes, logits.shape[2], logits.shape[3])
         for i in range(config.batch_size):
             out = self._forward(image[i],logits[i])
