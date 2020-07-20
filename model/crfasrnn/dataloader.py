@@ -44,7 +44,7 @@ class TrainPre(object):
         crop_size = (config.image_height, config.image_width)
         crop_pos = generate_random_crop_pos(img.shape[:2], crop_size)
 
-        p_img, _ = random_crop_pad_to_shape(img, crop_pos, crop_size, -1)
+        p_img, _ = random_crop_pad_to_shape(img, crop_pos, crop_size, 0)
         p_gt, _ = random_crop_pad_to_shape(gt, crop_pos, crop_size, -1)
 
         p_img = p_img.transpose(2, 0, 1)
