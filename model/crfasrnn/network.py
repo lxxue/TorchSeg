@@ -12,6 +12,8 @@ from seg_opr.seg_oprs import ConvBnRelu
 
 from crfrnn import CrfRnn
 
+_GPU = torch.device("cuda")
+
 class CrfRnnNet(nn.Module):
     def __init__(self, out_planes, criterion=None, pretrained_model=None,
                  norm_layer=nn.BatchNorm2d, n_iter=None):
@@ -25,11 +27,10 @@ class CrfRnnNet(nn.Module):
         psp_fm, aux_fm = self.psp.forward(data, label)
         # print("before crfrnn:", psp_fm.shape)    #debug
         out = self.crfrnn(data, psp_fm)    #Plug the CRF-RNN module at the end
+        out = out.to(_GPU)  #move to gpu
         # print("after crfrnn:", out.shape)    #debug
         
         if label is not None:
-            # psp_fm = F.log_softmax(psp_fm, dim=1)
-            # aux_fm = F.log_softmax(aux_fm, dim=1)
             psp_loss = self.criterion(psp_fm, label)
             aux_loss = self.criterion(aux_fm, label)
             crf_loss = self.criterion(out, label)
@@ -79,8 +80,6 @@ class PSPNet(nn.Module):
                                align_corners=True)
         aux_fm = F.interpolate(aux_fm, scale_factor=8, mode='bilinear',
                                align_corners=True)
-        # psp_fm = F.log_softmax(psp_fm, dim=1)
-        # aux_fm = F.log_softmax(aux_fm, dim=1)
 
         return psp_fm, aux_fm
 

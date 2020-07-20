@@ -19,6 +19,8 @@ from datasets import CIL
 from utils.init_func import init_weight, group_weight
 from engine.engine import Engine
 
+_CPU = torch.device("cpu")
+_GPU = torch.device("cuda")
 
 parser = argparse.ArgumentParser()
 
@@ -74,8 +76,9 @@ with Engine(custom_parser=parser) as engine:
                                 momentum=config.momentum,
                                 weight_decay=config.weight_decay)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(_GPU)
+    model.crfrnn.to(_CPU)
     
     # register state dictations
     engine.register_state(dataloader=train_loader, model=model,
@@ -118,7 +121,7 @@ with Engine(custom_parser=parser) as engine:
 
             pbar.set_description(print_str, refresh=False)
 
-        if (epoch%10==0):
+        if (epoch+1) % config.snapshot_iter == 0:
             engine.save_and_link_checkpoint(config.snapshot_dir,
                                                 config.log_dir,
                                                 config.log_dir_link)

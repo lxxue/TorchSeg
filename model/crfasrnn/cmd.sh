@@ -1,5 +1,5 @@
 # train
-python train
+python train -d 0
 
 # test using `pred_cpu.py`
 python pred_cpu.py -d 0 -p ../../output/crf-test/ -e log/snapshot/epoch-0.pth -m test
