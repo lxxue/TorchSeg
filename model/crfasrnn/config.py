@@ -73,8 +73,8 @@ C.fix_bn = False
 C.sync_bn = True
 C.bn_eps = 1e-5
 C.bn_momentum = 0.1
-# C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet50_v1c.pth")
-C.pretrained_model = None
+C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet50_v1c.pth")
+# C.pretrained_model = None
 
 
 """Train Config"""
