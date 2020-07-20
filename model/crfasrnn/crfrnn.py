@@ -103,10 +103,7 @@ class CrfRnn(nn.Module):
         
         unaries = logits
         # Initialization
-        if self.num_iterations>0:
-            q_values = F.softmax(unaries, dim=0)
-        else:
-            q_values = unaries
+        q_values = F.softmax(unaries, dim=0)
 
         for _ in range(self.num_iterations):
             # Spatial filtering
@@ -140,6 +137,9 @@ class CrfRnn(nn.Module):
         return torch.unsqueeze(q_values, 0)
 
     def forward(self, image, logits):
+        if self.num_iterations==0:
+            return logits
+        
         res = torch.zeros(1, config.num_classes, logits.shape[2], logits.shape[3])
         for i in range(config.batch_size):
             out = self._forward(image[i],logits[i])
