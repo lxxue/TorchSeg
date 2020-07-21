@@ -115,7 +115,10 @@ if __name__ == "__main__":
 
             fmap = network(img)
 
-            score = F.softmax(fmap, dim=1)
+            if network.crfrnn.num_iterations==0:
+                score = F.softmax(fmap, dim=1)
+            else:
+                score = fmap
 
             if args.save_path is not None:
                 fn = name + '.png'
