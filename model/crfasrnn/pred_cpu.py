@@ -74,6 +74,7 @@ if __name__ == "__main__":
     parser.add_argument('--iteration', type=int, default=5000)
     parser.add_argument('-summary', '--summary', action='store_true')
     parser.add_argument('-m', '--mode', default='test', type=str)
+    parser.add_argument('-ob', '--output_binary', default=False, action='store_true')
 
     args = parser.parse_args()
     # dev = torch.device("cuda:0")
@@ -122,6 +123,9 @@ if __name__ == "__main__":
 
             if args.save_path is not None:
                 fn = name + '.png'
-                heatmap = (score[0, 1].cpu().numpy() * 255).astype(np.uint8)
+                if(args.output_binary):
+                    heatmap = (np.argmax(score[0].cpu().numpy(), axis=0) * 255).astype(np.uint8)
+                else:
+                    heatmap = (score[0, 1].cpu().numpy() * 255).astype(np.uint8)
                 # print(heatmap)
                 cv2.imwrite(os.path.join(args.save_path, fn), heatmap)
