@@ -57,10 +57,9 @@ with Engine(custom_parser=parser) as engine:
                 BatchNorm2d, config.bn_eps, config.bn_momentum,
                 mode='fan_in', nonlinearity='relu')
 
-    
-    base_lr = config.lr
     # group weight initialization on all layers
-    # Q: why use group_weight?
+    base_lr = config.lr
+
     params_list = []
     params_list = group_weight(params_list, model.psp.backbone,
                                BatchNorm2d, base_lr)
@@ -68,7 +67,7 @@ with Engine(custom_parser=parser) as engine:
         params_list = group_weight(params_list, module, BatchNorm2d,
                                    base_lr * 10)
     params_list.append(
-        dict(params=list(model.crfrnn.parameters()), weight_decay=config.weight_decay, lr=base_lr)) #todo
+        dict(params=list(model.crfrnn.parameters()), weight_decay=.0, lr=config.lr_crf)) #todo
 
     # optimizer = torch.optim.Adam(params_list)
     optimizer = torch.optim.SGD(params_list,
