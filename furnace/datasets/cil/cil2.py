@@ -34,18 +34,23 @@ class CIL2(data.Dataset):
             names = self._file_names[index]
         img_path = os.path.join(self._img_path, names[0])
         gt_path = os.path.join(self._gt_path, names[1])
-        edge_path = os.path.join(self._img_path, names[2])
-        midline_path = os.path.join(self._img_path, names[3])
         item_name = names[1].split("/")[-1].split(".")[0]
 
         img, gt = self._fetch_data(img_path, gt_path)
         img = img[:, :, ::-1]
-        edge = np.array(cv2.imread(edge_path, cv2.IMREAD_GRAYSCALE), dtype=None)
-        midline = np.array(cv2.imread(midline_path, cv2.IMREAD_GRAYSCALE), dtype=None)
+
+        if self._split_name == 'train':
+            edge_path = os.path.join(self._img_path, names[2])
+            midline_path = os.path.join(self._img_path, names[3])
+            edge = np.array(cv2.imread(edge_path, cv2.IMREAD_GRAYSCALE), dtype=None)
+            midline = np.array(cv2.imread(midline_path, cv2.IMREAD_GRAYSCALE), dtype=None)
+        else:
+            edge = None
+            midline = None
         if self.preprocess is not None:
             img, gt, edge, midline, extra_dict = self.preprocess(img, gt, edge, midline)
 
-        if self._split_name is 'train':
+        if self._split_name == 'train':
             img = torch.from_numpy(np.ascontiguousarray(img)).float()
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long()
             edge = torch.from_numpy(np.ascontiguousarray(edge)).long()
@@ -58,8 +63,12 @@ class CIL2(data.Dataset):
                     if 'img' in k:
                         extra_dict[k] = extra_dict[k].float()
 
-        output_dict = dict(data=img, label=gt, fn=str(item_name),
-                           n=len(self._file_names), edge=edge, midline=midline)
+            output_dict = dict(data=img, label=gt, fn=str(item_name),
+                               n=len(self._file_names), edge=edge, midline=midline)
+        else:
+            output_dict = dict(data=img, label=gt, fn=str(item_name),
+                               n=len(self._file_names))
+
         if self.preprocess is not None and extra_dict is not None:
             output_dict.update(**extra_dict)
 
@@ -102,16 +111,18 @@ class CIL2(data.Dataset):
 
         return new_file_names
 
-    @staticmethod
-    def _process_item_names(item):
+    def _process_item_names(self, item):
         item = item.strip()
         item = item.split('\t')
         img_name = item[0]
         gt_name = item[1]
-        edge_name = item[2]
-        midline_name = item[3]
+        if self._split_name == 'train':
+            edge_name = item[2]
+            midline_name = item[3]
 
-        return img_name, gt_name, edge_name, midline_name
+            return img_name, gt_name, edge_name, midline_name
+        else:
+            return img_name, gt_name, None, None
 
     def get_length(self):
         return self.__len__()

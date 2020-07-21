@@ -40,7 +40,7 @@ class CIL(data.Dataset):
         if self.preprocess is not None:
             img, gt, extra_dict = self.preprocess(img, gt)
 
-        if self._split_name is 'train':
+        if self._split_name == 'train':
             img = torch.from_numpy(np.ascontiguousarray(img)).float()
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long()
             if self.preprocess is not None and extra_dict is not None:

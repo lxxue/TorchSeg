@@ -16,8 +16,8 @@ from engine.evaluator import Evaluator
 from engine.logger import get_logger
 from seg_opr.metric import hist_info, compute_score
 from tools.benchmark import compute_speed, stat
-from datasets import CIL
-from network import PSPNet
+from datasets import CIL2
+from network import PSPNet2
 from utils.img_utils import normalize
 
 logger = get_logger()
@@ -48,7 +48,7 @@ class EvalPre(object):
         self.img_mean = img_mean
         self.img_std = img_std
 
-    def __call__(self, img, gt):
+    def __call__(self, img, gt, edge=None, midline=None):
         gt = img_to_black(gt)
 
         img = normalize(img, self.img_mean, self.img_std)
@@ -57,7 +57,7 @@ class EvalPre(object):
 
         extra_dict = None
 
-        return img, gt, extra_dict
+        return img, gt, None, None, extra_dict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dev = torch.device("cuda:0")
 
-    network = PSPNet(config.num_classes, criterion=None, is_training=False)
+    network = PSPNet2(config.num_classes, criterion=None, is_training=False)
     weights = torch.load(os.path.join("log", "snapshot", "epoch-{}.pth".format(args.epochs)))['model']
     network.load_state_dict(weights)
     network.to(dev)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                     'train_source': config.train_source,
                     'eval_source': config.eval_source,
                     'test_source': config.test_source}
-    dataset = CIL(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
+    dataset = CIL2(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=1,
@@ -112,7 +112,7 @@ if __name__ == "__main__":
             img = torch.from_numpy(np.ascontiguousarray(img)).float().to(dev)
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long().to(dev)
 
-            fmap = network(img, gt)
+            fmap = network(img)
 
             score = F.softmax(fmap, dim=1)
 
