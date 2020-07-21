@@ -30,11 +30,11 @@ class DenseCRFParams(object):
 
     def __init__(
         self,
-        alpha=160.0, # default=160.0
-        beta=3.0,	# default=3.0
-        gamma=3.0,	# default=3.0
-        spatial_ker_weight=3.0,	# trainable in crfasrnn
-        bilateral_ker_weight=5.0,	# trainable in crfasrnn
+        alpha=40.0, # default=160.0
+        beta=1.7500746997459924,	# default=3.0
+        gamma=4.461952267619522,	# default=3.0
+        spatial_ker_weight=3.7606425465775133,	# trainable in crfasrnn
+        bilateral_ker_weight=1.6835678682669473,	# trainable in crfasrnn
     ):
         """
         Default values were taken from https://github.com/sadeepj/crfasrnn_keras. More details about these parameters
