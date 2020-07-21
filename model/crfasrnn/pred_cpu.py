@@ -79,7 +79,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # dev = torch.device("cuda:0")
 
-    network = CrfRnnNet(config.num_classes, n_iter=1)
+    network = CrfRnnNet(config.num_classes, n_iter=config.eval_num_iter)
     weights = torch.load(os.path.join("log", "snapshot", "epoch-{}.pth".format(args.epochs)))['model']
     network.load_state_dict(weights)
     # network.to(dev)

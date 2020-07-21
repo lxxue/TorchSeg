@@ -42,7 +42,7 @@ with Engine(custom_parser=parser) as engine:
                                     ignore_index=-1)
     model = CrfRnnNet(config.num_classes, criterion=criterion,
                pretrained_model=config.pretrained_model,
-               norm_layer=BatchNorm2d, n_iter=3)
+               norm_layer=BatchNorm2d, n_iter=config.train_num_iter)
     #`n_iter=5`: during training, we set the number of mean-field iterations T in the CRF-RNN to 5    
 
     # initialize parameters
