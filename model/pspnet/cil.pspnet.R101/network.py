@@ -16,9 +16,9 @@ class PSPNet(nn.Module):
                  norm_layer=nn.BatchNorm2d, is_training=True):
         super(PSPNet, self).__init__()
         self.backbone = resnet101(pretrained_model, norm_layer=norm_layer,
-                                 bn_eps=config.bn_eps,
-                                 bn_momentum=config.bn_momentum,
-                                 deep_stem=True, stem_width=64)
+                                  bn_eps=config.bn_eps,
+                                  bn_momentum=config.bn_momentum,
+                                  deep_stem=True, stem_width=64)
         self.backbone.layer3.apply(partial(self._nostride_dilate, dilate=2))
         self.backbone.layer4.apply(partial(self._nostride_dilate, dilate=4))
 
@@ -48,8 +48,8 @@ class PSPNet(nn.Module):
                                align_corners=True)
         aux_fm = F.interpolate(aux_fm, scale_factor=8, mode='bilinear',
                                align_corners=True)
-        psp_fm = F.log_softmax(psp_fm, dim=1)
-        aux_fm = F.log_softmax(aux_fm, dim=1)
+        # psp_fm = F.log_softmax(psp_fm, dim=1)
+        # aux_fm = F.log_softmax(aux_fm, dim=1)
 
         if label is not None and self.is_training:
             loss = self.criterion(psp_fm, label)
