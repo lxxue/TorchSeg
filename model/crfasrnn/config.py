@@ -86,7 +86,7 @@ C.nepochs = 4000
 C.niters_per_epoch = int(np.ceil(C.num_train_imgs // C.batch_size))
 C.num_workers = 8
 C.train_scale_array = [0.5, 0.75, 1, 1.5, 1.75, 2]
-C.train_num_iter = 5
+C.train_num_iter = 8
 
 """Eval Config"""
 C.eval_iter = 30
