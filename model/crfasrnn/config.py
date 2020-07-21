@@ -78,6 +78,7 @@ C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet50_v1c.pth")
 
 """Train Config"""
 C.lr = 1e-3
+C.lr_crf = 1e-13
 C.lr_power = 0.9
 C.momentum = 0.9
 C.weight_decay = 1e-4
