@@ -176,15 +176,19 @@ class PSPNet2(nn.Module):
         # edge_fm = F.log_softmax(edge_fm)
         # centerline_fm = F.log_softmax(centerline_fm)
 
-        if label is not None and self.is_training:
-            # print(label.min(), label.max())
-            loss = self.criterion(psp_fm, label)
-            aux_loss = self.criterion(aux_fm, label)
-            edge_loss = self.edge_criterion(edge_fm, edge_label) 
-            centerline_loss = self.centerline_criterion(centerline_fm, centerline_label)
-            # print("loss: {:.3f} {:.3f} {:.3f} {:.3f}".format(loss.item(), aux_loss.item(), edge_loss.item(), centerline_loss.item()))
-            loss = loss + 0.4 * aux_loss + 0.2 * edge_loss + 0.2 * centerline_loss
-            return loss
+        if label is not None: 
+            if self.is_training:
+                # print(label.min(), label.max())
+                loss = self.criterion(psp_fm, label)
+                aux_loss = self.criterion(aux_fm, label)
+                edge_loss = self.edge_criterion(edge_fm, edge_label) 
+                centerline_loss = self.centerline_criterion(centerline_fm, centerline_label)
+                # print("loss: {:.3f} {:.3f} {:.3f} {:.3f}".format(loss.item(), aux_loss.item(), edge_loss.item(), centerline_loss.item()))
+                loss = loss + 0.4 * aux_loss + 0.2 * edge_loss + 0.2 * centerline_loss
+                return loss
+            else:
+                # val setting
+                return psp_fm, edge_fm, centerline_fm
 
         return psp_fm
 

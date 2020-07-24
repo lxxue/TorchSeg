@@ -39,7 +39,7 @@ class CIL2(data.Dataset):
         img, gt = self._fetch_data(img_path, gt_path)
         img = img[:, :, ::-1]
 
-        if self._split_name == 'train':
+        if self._split_name == 'train' or self._split_name == 'val':
             edge_path = os.path.join(self._img_path, names[2])
             midline_path = os.path.join(self._img_path, names[3])
             edge = np.array(cv2.imread(edge_path, cv2.IMREAD_GRAYSCALE), dtype=None)
@@ -50,7 +50,7 @@ class CIL2(data.Dataset):
         if self.preprocess is not None:
             img, gt, edge, midline, extra_dict = self.preprocess(img, gt, edge, midline)
 
-        if self._split_name == 'train':
+        if self._split_name == 'train' or self._split_name == 'val':
             img = torch.from_numpy(np.ascontiguousarray(img)).float()
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long()
             edge = torch.from_numpy(np.ascontiguousarray(edge)).long()
@@ -116,7 +116,7 @@ class CIL2(data.Dataset):
         item = item.split('\t')
         img_name = item[0]
         gt_name = item[1]
-        if self._split_name == 'train':
+        if self._split_name == 'train' or self._split_name == 'val':
             edge_name = item[2]
             midline_name = item[3]
 
