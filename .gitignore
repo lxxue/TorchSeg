@@ -2,3 +2,4 @@
 **/log/
 model_zoo/
 model/**/*.png
+**/lsf*
