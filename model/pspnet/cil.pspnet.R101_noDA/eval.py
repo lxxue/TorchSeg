@@ -16,8 +16,8 @@ from engine.evaluator import Evaluator
 from engine.logger import get_logger
 from seg_opr.metric import hist_info, compute_score
 from tools.benchmark import compute_speed, stat
-from datasets import CIL2
-from network import PSPNet2
+from datasets import CIL
+from network import PSPNet
 from utils.img_utils import normalize
 
 logger = get_logger()
@@ -48,7 +48,7 @@ class EvalPre(object):
         self.img_mean = img_mean
         self.img_std = img_std
 
-    def __call__(self, img, gt, edge=None, midline=None):
+    def __call__(self, img, gt):
         gt = img_to_black(gt)
 
         img = normalize(img, self.img_mean, self.img_std)
@@ -57,7 +57,7 @@ class EvalPre(object):
 
         extra_dict = None
 
-        return img, gt, edge, midline, extra_dict
+        return img, gt, extra_dict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dev = torch.device("cuda:0")
 
-    network = PSPNet2(config.num_classes, criterion=None, is_training=False)
+    network = PSPNet(config.num_classes, criterion=None, is_training=False)
     weights = torch.load(os.path.join("log", "snapshot", "epoch-{}.pth".format(args.epochs)))['model']
     network.load_state_dict(weights)
     network.to(dev)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
                     'train_source': config.train_source,
                     'eval_source': config.eval_source,
                     'test_source': config.test_source}
-    dataset = CIL2(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
+    dataset = CIL(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=1,
@@ -107,37 +107,23 @@ if __name__ == "__main__":
         for i, data in enumerate(tqdm(dataloader)):
             img = data['data']
             gt = data['label']
-            edge = data['edge']
-            midline = data['midline']
             name = data['fn'][0]
 
             img = torch.from_numpy(np.ascontiguousarray(img)).float().to(dev)
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long().to(dev)
-            edge = torch.from_numpy(np.ascontiguousarray(edge)).long().to(dev)
-            midline = torch.from_numpy(np.ascontiguousarray(midline)).long().to(dev)
 
-            fmap, edge_fmap, midline_fmap = network(img, gt, edge, midline)
+            fmap = network(img, gt)
 
             score = F.softmax(fmap, dim=1)
-            edge_score = F.softmax(edge_fmap, dim=1)
-            midline_score = F.softmax(midline_fmap, dim=1)
 
             loss[i] = criterion(fmap, gt).item()
             # print(loss.item())
             heatmap = (score[0, 1].cpu().numpy() * 255).astype(np.uint8)
-            edge_heatmap = (edge_score[0, 1].cpu().numpy() * 255).astype(np.uint8)
-            midline_heatmap = (midline_score[0, 1].cpu().numpy() * 255).astype(np.uint8)
-
-
 
             if args.save_path is not None:
                 fn = name + '.png'
-                edge_fn = name + '_edge.png'
-                midline_fn = name = '_midline.png'
                 # print(heatmap)
                 cv2.imwrite(os.path.join(args.save_path, fn), heatmap)
-                cv2.imwrite(os.path.join(args.save_path, edge_fn), edge_heatmap)
-                cv2.imwrite(os.path.join(args.save_path, midline_fn), midline_heatmap)
 
             pred_patch1.append(img_to_uint8(heatmap, patch_size=1).reshape((-1,)))
             gt_patch1.append(img_to_uint8(gt[0].cpu().numpy()*255, patch_size=1).reshape((-1,)))

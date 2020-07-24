@@ -39,8 +39,8 @@ C.dataset_path = osp.join(C.root_dir, 'cil')
 # C.img_root_folder = osp.join(C.dataset_path, 'training/images/')
 C.img_root_folder = C.dataset_path
 C.gt_root_folder = C.dataset_path
-C.train_source = osp.join("./", "train_edge_midline.txt")
-C.eval_source = osp.join(C.dataset_path, "val_edge_midline.txt")
+C.train_source = osp.join(C.dataset_path, "train.txt")
+C.eval_source = osp.join(C.dataset_path, "val.txt")
 C.test_source = osp.join(C.dataset_path, "test.txt")
 C.is_test = False
 
@@ -73,7 +73,7 @@ C.fix_bn = False
 C.sync_bn = True
 C.bn_eps = 1e-5
 C.bn_momentum = 0.1
-C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet50_v1c.pth")
+C.pretrained_model = osp.join(C.root_dir, "model_zoo", "resnet101_v1c.pth")
 
 
 """Train Config"""
