@@ -1,27 +1,26 @@
-#!/usr/bin/env python3
-# encoding: utf-8
 import os
 import cv2
 import argparse
 import numpy as np
+from tqdm import tqdm
+from sklearn import metrics
+import json
 
 import torch
+import torch.nn.functional as F
 
 from config import config
 from utils.pyt_utils import ensure_dir, link_file, load_model, parse_devices
-#from utils.visualize import print_iou, show_img
+from utils.visualize import print_iou, show_img
 from engine.evaluator import Evaluator
 from engine.logger import get_logger
-# from seg_opr.metric import hist_info, compute_score
+from seg_opr.metric import hist_info, compute_score
 from tools.benchmark import compute_speed, stat
-from datasets import Cil
-from network import Network_UNet
+from datasets import CIL
+from network import CrfRnnNet
+from utils.img_utils import normalize
 
 logger = get_logger()
-
-# add pixel-wise RMSE
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 
 def img_to_black(img, threshold=50):
     """Binary filter on greyscale image."""
@@ -44,87 +43,126 @@ def img_to_uint8(img, threshold=0.50, patch_size = 16):
                 img[i:i + patch_size, j:j + patch_size] = np.zeros_like(patch)
     return img
 
-class SegEvaluator(Evaluator):
-    def func_per_iteration(self, data, device):
-        img = data['data']
-        label = data['label']
-        name = data['fn']
+class EvalPre(object):
+    def __init__(self, img_mean, img_std):
+        self.img_mean = img_mean
+        self.img_std = img_std
 
-        img = cv2.resize(img, (config.image_width, config.image_height),
-                         interpolation=cv2.INTER_LINEAR)
-        label = cv2.resize(label,
-                           (config.image_width // config.gt_down_sampling,
-                            config.image_height // config.gt_down_sampling),
-                           interpolation=cv2.INTER_NEAREST)
+    def __call__(self, img, gt):
+        gt = img_to_black(gt)
 
-        pred = self.whole_eval(img,
-                               (config.image_height // config.gt_down_sampling,
-                                config.image_width // config.gt_down_sampling),
-                               device)
-#        hist_tmp, labeled_tmp, correct_tmp = hist_info(config.num_classes,
-#                                                       pred,
-#                                                       label)
-#        results_dict = {'hist': hist_tmp, 'labeled': labeled_tmp,
-#                        'correct': correct_tmp}
+        img = normalize(img, self.img_mean, self.img_std)
 
-        if self.save_path is not None:
-            fn = name + '.png'
-            cv2.imwrite(os.path.join(self.save_path, fn), pred)
+        img = img.transpose(2, 0, 1)
 
-        results_dict = {'rmse': np.sqrt(mean_squared_error(pred, label))}
+        extra_dict = None
 
-        return results_dict
-
-    def compute_metric(self, results):
-        """Calculate the RMSE per images."""
-        count = 0
-        rmse = 0
-        for d in results:
-            count += 1
-            rmse += d['rmse']
-
-        rmse_print = 'average RMSE for {} images: {}\n'.format(count, rmse / count)
-        print(rmse_print)
-        return rmse_print
+        return img, gt, extra_dict
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('-lr', '--learning_rate', default='', type=str)
     parser.add_argument('-e', '--epochs', default='last', type=str)
+    parser.add_argument('-n', '--num_iter', default=-1, type=int)
     parser.add_argument('-d', '--devices', default='1', type=str)
     parser.add_argument('-v', '--verbose', default=False, action='store_true')
     parser.add_argument('--save_path', '-p', default=None)
     parser.add_argument('--input_size', type=str, default='1x3x400x400',
                         help='Input size. '
                              'channels x height x width (default: 1x3x224x224)')
-    parser.add_argument('-speed', '--speed_test', action='store_true')
-    parser.add_argument('--iteration', type=int, default=5000)
-    parser.add_argument('-summary', '--summary', action='store_true')
 
     args = parser.parse_args()
-    all_dev = parse_devices(args.devices)
+    dev = torch.device("cuda:0")
 
-    network = Network_UNet(config.num_classes, is_training=False)
+    network = CrfRnnNet(config.num_classes, criterion=None, n_iter=args.num_iter)
+    weights = torch.load(os.path.join("log", "snapshot_{}".format(args.learning_rate), "epoch-{}.pth".format(args.epochs)))['model']
+    network.load_state_dict(weights)
+    network.to(dev)
     data_setting = {'img_root': config.img_root_folder,
                     'gt_root': config.gt_root_folder,
                     'train_source': config.train_source,
                     'eval_source': config.eval_source,
                     'test_source': config.test_source}
-    dataset = Cil(data_setting, 'val', None)
+    dataset = CIL(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
+    dataloader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=1,
+        num_workers=config.num_workers,
+        drop_last=False,
+        shuffle=False,
+        pin_memory=True)
+    
+    criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+    loss = np.zeros((len(dataloader),))
 
-    if args.speed_test:
-        device = all_dev[0]
-        logger.info("=========DEVICE:%s SIZE:%s=========" % (
-            torch.cuda.get_device_name(device), args.input_size))
-        input_size = tuple(int(x) for x in args.input_size.split('x'))
-        compute_speed(network, input_size, device, args.iteration)
-    elif args.summary:
-        input_size = tuple(int(x) for x in args.input_size.split('x'))
-        stat(network, input_size)
-    else:
-        with torch.no_grad():
-            segmentor = SegEvaluator(dataset, config.num_classes, config.image_mean,
-                                     config.image_std, network,
-                                     config.eval_scale_array, config.eval_flip,
-                                     all_dev, args.verbose, args.save_path)
-            segmentor.run(config.snapshot_dir, args.epochs, config.val_log_file,
-                          config.link_val_log_file)
+    pred_patch1 = []
+    gt_patch1 = []
+    pred_patch16 = []
+    gt_patch16 = []
+
+
+    if args.save_path is not None:
+        os.makedirs(args.save_path)
+
+    with torch.no_grad():
+        network.eval()
+        for i, data in enumerate(tqdm(dataloader)):
+            img = data['data']
+            gt = data['label']
+            name = data['fn'][0]
+
+            img = torch.from_numpy(np.ascontiguousarray(img)).float().to(dev)
+            gt = torch.from_numpy(np.ascontiguousarray(gt)).long().to(dev)
+
+            fmap = network(img, gt)
+
+            score = F.softmax(fmap, dim=1)
+
+            loss[i] = criterion(fmap, gt).item()
+            # print(loss.item())
+            heatmap = (score[0, 1].cpu().numpy() * 255).astype(np.uint8)
+
+            if args.save_path is not None:
+                fn = name + '.png'
+                # print(heatmap)
+                cv2.imwrite(os.path.join(args.save_path, fn), heatmap)
+
+            pred_patch1.append(img_to_uint8(heatmap, patch_size=1).reshape((-1,)))
+            gt_patch1.append(img_to_uint8(gt[0].cpu().numpy()*255, patch_size=1).reshape((-1,)))
+            pred_patch16.append(img_to_uint8(heatmap, patch_size=16).reshape((-1,)))
+            gt_patch16.append(img_to_uint8(gt[0].cpu().numpy()*255, patch_size=16).reshape((-1,)))
+
+    pred_patch1 = np.stack(pred_patch1, axis=0)
+    gt_patch1 = np.stack(gt_patch1, axis=0)
+    pred_patch16 = np.stack(pred_patch16, axis=0)
+    gt_patch16 = np.stack(gt_patch16, axis=0)
+
+    stats = {}
+    stats['mean_loss'] = np.mean(loss)
+    stats['acc_1'] = np.mean(pred_patch1 == gt_patch1)
+    stats['f1_micro_1'] = metrics.f1_score(gt_patch1, pred_patch1, average='micro')
+    stats['f1_macro_1'] = metrics.f1_score(gt_patch1, pred_patch1, average='macro')
+    stats['f1_samples_1'] = metrics.f1_score(gt_patch1, pred_patch1, average='samples')
+    stats['acc_16'] = np.mean(pred_patch16 == gt_patch16)
+    stats['f1_micro_16'] = metrics.f1_score(gt_patch16, pred_patch16, average='micro')
+    stats['f1_macro_16'] = metrics.f1_score(gt_patch16, pred_patch16, average='macro')
+    stats['f1_samples_16'] = metrics.f1_score(gt_patch16, pred_patch16, average='samples')
+
+    print(json.dumps(stats, indent=4))
+    if args.save_path is not None:
+        with open(os.path.join(args.save_path, 'stats.json'), 'w') as f:
+            json.dump(stats, f, indent=4)
+
+    #print(np.mean(loss))
+    # print(metrics.f1_score(gt_patch1, pred_patch1, average=None).shape)
+    # print(metrics.f1_score(gt_patch1, pred_patch1, average='binary'))
+    #print(np.mean(pred_patch1 == gt_patch1))
+    #print(metrics.f1_score(gt_patch1, pred_patch1, average='micro'))
+    #print(metrics.f1_score(gt_patch1, pred_patch1, average='macro'))
+    #print(metrics.f1_score(gt_patch1, pred_patch1, average='samples'))
+    # print(metrics.f1_score(gt_patch16, pred_patch16, average=None))
+    # print(metrics.f1_score(gt_patch16, pred_patch16, average='binary'))
+    #print(np.mean(pred_patch16 == gt_patch16))
+    #print(metrics.f1_score(gt_patch16, pred_patch16, average='micro'))
+    #print(metrics.f1_score(gt_patch16, pred_patch16, average='macro'))
+    #print(metrics.f1_score(gt_patch16, pred_patch16, average='samples'))
