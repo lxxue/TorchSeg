@@ -1,5 +1,6 @@
 **/__pycache__/
-**/log/
 model_zoo/
 model/**/*.png
 **/lsf*
+**/log
+**/log/

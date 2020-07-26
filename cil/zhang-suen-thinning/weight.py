@@ -2,7 +2,7 @@ import numpy as np
 import imageio
 import os
 
-
+# calculate the percentage of class 1 in different grount truth
     
 
 def img_to_black(img, threshold=50):

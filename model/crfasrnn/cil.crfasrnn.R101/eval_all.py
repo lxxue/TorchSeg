@@ -12,3 +12,6 @@ for lr in lrs:
             print(lr, e, n)
             os.system("python eval.py -lr {}  -e {} -n {} -p results_eval/{}/epoch{}/iter{}/".format(lr, e, n, lr, e, n))
             print("-----------------------------------------------------------------")
+            break
+        break
+    break

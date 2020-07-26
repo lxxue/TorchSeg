@@ -31,8 +31,7 @@ def img_to_black(img, threshold=50):
     img[idx_0] = 0
     return img
 
-def img_to_uint8(img, threshold=0.50, patch_size = 16):
-    img = img_to_black(img)
+def img_to_uint8(img, threshold=0.50*255, patch_size = 16):
     """Reads a single image and outputs the strings that should go into the submission file"""
     for j in range(0, img.shape[1], patch_size):
         for i in range(0, img.shape[0], patch_size):
@@ -83,6 +82,7 @@ if __name__ == "__main__":
                     'train_source': config.train_source,
                     'eval_source': config.eval_source,
                     'test_source': config.test_source}
+    network.crfrnn.to(torch.device('cpu'))
     dataset = CIL(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
     dataloader = torch.utils.data.DataLoader(
         dataset,
@@ -92,7 +92,8 @@ if __name__ == "__main__":
         shuffle=False,
         pin_memory=True)
     
-    criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+    # criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+    criterion = torch.nn.BCELoss(reduction='mean')
     loss = np.zeros((len(dataloader),))
 
     pred_patch1 = []
@@ -112,13 +113,15 @@ if __name__ == "__main__":
             name = data['fn'][0]
 
             img = torch.from_numpy(np.ascontiguousarray(img)).float().to(dev)
-            gt = torch.from_numpy(np.ascontiguousarray(gt)).long().to(dev)
+            gt = torch.from_numpy(np.ascontiguousarray(gt)).float().to(dev)
 
-            fmap = network(img, gt)
+            fmap = network(img)
 
-            score = F.softmax(fmap, dim=1)
+            # score = F.softmax(fmap, dim=1)
+            score = fmap
+            print(fmap)
 
-            loss[i] = criterion(fmap, gt).item()
+            loss[i] = criterion(fmap[:, 1, :, :], gt).item()
             # print(loss.item())
             heatmap = (score[0, 1].cpu().numpy() * 255).astype(np.uint8)
 
@@ -136,6 +139,8 @@ if __name__ == "__main__":
     gt_patch1 = np.stack(gt_patch1, axis=0)
     pred_patch16 = np.stack(pred_patch16, axis=0)
     gt_patch16 = np.stack(gt_patch16, axis=0)
+    print(pred_patch16)
+    print(gt_patch16)
 
     stats = {}
     stats['mean_loss'] = np.mean(loss)
