@@ -96,9 +96,9 @@ C.eval_width = 400
 # C.eval_crop_size = 480
 
 """Display Config"""
-C.snapshot_iter = 100
-C.record_info_iter = 100
-C.display_iter = 100
+C.snapshot_iter = 200
+C.record_info_iter = 200
+C.display_iter = 200
 
 
 def open_tensorboard():
