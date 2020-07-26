@@ -104,10 +104,12 @@ class CrfRnn(nn.Module):
         _, h, w = image.shape
         
         unaries = logits
-        # Initialization
-        q_values = F.softmax(unaries, dim=0)
+        cur_logits = unaries
 
         for _ in range(self.num_iterations):
+            # Normalization
+            q_values = F.softmax(cur_logits, dim=0)
+
             # Spatial filtering
             spatial_out = torch.mm(
                 self.spatial_ker_weights,
@@ -131,12 +133,9 @@ class CrfRnn(nn.Module):
             )
 
             # Adding unary potentials
-            q_values = unaries - pairwise
+            cur_logits = unaries - pairwise
 
-            # Normalization
-            q_values = F.softmax(q_values, dim=0)
-
-        return torch.unsqueeze(q_values, 0)
+        return torch.unsqueeze(cur_logits, 0)
 
     def forward(self, image, logits):
         if self.num_iterations==0:
