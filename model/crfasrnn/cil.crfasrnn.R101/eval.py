@@ -83,6 +83,7 @@ if __name__ == "__main__":
                     'train_source': config.train_source,
                     'eval_source': config.eval_source,
                     'test_source': config.test_source}
+    network.crfrnn.to(torch.device('cpu'))
     dataset = CIL(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
     dataloader = torch.utils.data.DataLoader(
         dataset,
@@ -114,7 +115,7 @@ if __name__ == "__main__":
             img = torch.from_numpy(np.ascontiguousarray(img)).float().to(dev)
             gt = torch.from_numpy(np.ascontiguousarray(gt)).long().to(dev)
 
-            fmap = network(img, gt)
+            fmap = network(img)
 
             score = F.softmax(fmap, dim=1)
 

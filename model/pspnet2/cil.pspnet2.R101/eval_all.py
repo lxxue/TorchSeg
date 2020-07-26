@@ -1,8 +1,7 @@
 import os
 import numpy as np
 
-# epoch_nums = np.arange(100, 4100, step=100)
-epoch_nums = [2800]
+epoch_nums = np.arange(100, 4100, step=100)
 print(epoch_nums)
 for e in epoch_nums:
     print("-----------------------------------------------------------------")

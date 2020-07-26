@@ -147,7 +147,7 @@ class CrfRnn(nn.Module):
         logits = logits.to(_CPU)
 
         res = torch.zeros(1, config.num_classes, logits.shape[2], logits.shape[3])
-        for i in range(config.batch_size):
+        for i in range(len(image)):
             out = self._forward(image[i],logits[i])
             res = torch.cat((res,out), dim=0)
         res = res[1:]
