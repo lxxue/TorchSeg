@@ -26,7 +26,7 @@ C.this_dir = C.abs_dir.split(osp.sep)[-1]
 C.root_dir = C.abs_dir[:C.abs_dir.index(C.repo_name) + len(C.repo_name)]
 C.log_dir = osp.abspath(osp.join(C.root_dir, 'log', C.this_dir))
 C.log_dir_link = osp.join(C.abs_dir, 'log')
-C.snapshot_dir = osp.abspath(osp.join(C.log_dir, "snapshot"))
+C.snapshot_dir = osp.abspath(osp.join(C.log_dir, "all_snapshot"))
 
 exp_time = time.strftime('%Y_%m_%d_%H_%M_%S', time.localtime())
 C.log_file = C.log_dir + '/log_' + exp_time + '.log'
@@ -65,7 +65,8 @@ C.image_std = np.array([0.229, 0.224, 0.225])
 C.image_height = 400
 C.image_width = 400
 C.gt_down_sampling = 1
-C.num_train_imgs = 90
+# C.num_train_imgs = 90
+C.num_train_imgs = 100
 C.num_eval_imgs = 10
 
 """ Settings for network, this would be different for each kind of model"""
