@@ -65,7 +65,9 @@ class TestPre(object):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('-lr', '--learning_rate', default='', type=str)
     parser.add_argument('-e', '--epochs', default='last', type=str)
+    parser.add_argument('-n', '--num_iter', default=-1, type=int)
     parser.add_argument('-d', '--devices', default='1', type=str)
     parser.add_argument('-v', '--verbose', default=False, action='store_true')
     parser.add_argument('--save_path', '-p', default=None)
@@ -82,7 +84,7 @@ if __name__ == "__main__":
     # dev = torch.device("cuda:0")
 
     network = CrfRnnNet(config.num_classes, n_iter=config.eval_num_iter)
-    weights = torch.load(os.path.join("log", "snapshot", "epoch-{}.pth".format(args.epochs)))['model']
+    weights = torch.load(os.path.join("log", "snapshot_{}".format(args.learning_rate), "epoch-{}.pth".format(args.epochs)))['model']
     network.load_state_dict(weights)
     # network.to(dev)
     network.to(_GPU)
@@ -103,11 +105,8 @@ if __name__ == "__main__":
     
     criterion = torch.nn.CrossEntropyLoss(reduction='mean')
 
-    if args.save_path is not None:
-        try:
-            os.makedirs(args.save_path)
-        except:
-            pass
+    if not os.path.isdir(args.save_path):
+        os.mkdir(args.save_path)
 
     with torch.no_grad():
         network.eval()
@@ -120,11 +119,6 @@ if __name__ == "__main__":
             fmap = network(img)
 
             score = F.softmax(fmap, dim=1)
-
-            # if network.crfrnn.num_iterations==0:
-            #     score = F.softmax(fmap, dim=1)
-            # else:
-            #     score = fmap
 
             if args.save_path is not None:
                 fn = name + '.png'
