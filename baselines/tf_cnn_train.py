@@ -188,7 +188,7 @@ def make_img_overlay(img, predicted_img):
 
 def main(argv=None):  # pylint: disable=unused-argument
 
-    data_dir = 'training/'
+    data_dir = '../cil/training/'
     train_data_filename = data_dir + 'images/'
     train_labels_filename = data_dir + 'groundtruth/' 
 

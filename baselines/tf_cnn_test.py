@@ -28,7 +28,7 @@ BATCH_SIZE = 16 # 64
 # If you tweak this parameter, change the submission file accordingly
 IMG_PATCH_SIZE = 16
 
-test_dir = 'test_images/'
+test_dir = '../cil/test_images/'
 
 # Extract patches from a given image
 def img_crop(im, w, h):

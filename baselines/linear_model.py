@@ -8,9 +8,9 @@ from tqdm import tqdm
 import cv2
 
 patch_size = 16 # each patch is 16*16 pixels
-train_dir = 'training/images/'
-gt_dir = 'training/groundtruth/'
-test_dir = 'test_images/'
+train_dir = '../cil/training/images/'
+gt_dir = '../cil/training/groundtruth/'
+test_dir = '../cil/test_images/'
 
 # Helper functions
 def load_image(infilename):
