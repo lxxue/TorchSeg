@@ -137,8 +137,8 @@ if __name__ == "__main__":
     gt_patch1 = np.stack(gt_patch1, axis=0)
     pred_patch16 = np.stack(pred_patch16, axis=0)
     gt_patch16 = np.stack(gt_patch16, axis=0)
-    print(pred_patch16)
-    print(gt_patch16)
+    # print(pred_patch16)
+    # print(gt_patch16)
 
     stats = {}
     stats['mean_loss'] = np.mean(loss)
