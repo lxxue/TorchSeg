@@ -1,8 +1,8 @@
 import os
 import numpy as np
 
-lrs = ['1e-06', '1e-09', '1e-12']
-epoch_nums = [100, 200, 300]
+lrs = ['0.001', '1e-05', '1e-07', '1e-09', '1e-11', '1e-13', '1e-15']
+epoch_nums = [1600]
 num_iters = [1, 2, 4, 8]
 print(epoch_nums)
 for lr in lrs:
@@ -12,6 +12,6 @@ for lr in lrs:
             print(lr, e, n)
             os.system("python eval.py -lr {}  -e {} -n {} -p results_eval/{}/epoch{}/iter{}/".format(lr, e, n, lr, e, n))
             print("-----------------------------------------------------------------")
-            break
-        break
-    break
+            # break
+        # break
+    # break
