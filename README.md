@@ -19,7 +19,7 @@ Download the following two checkpoints into `model_zoo` dir
 * [ResNet50](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
 * [ResNet101](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
 
-### Data
+## Data
 ```bash
 ${TorchSeg}
 ├── cil
@@ -31,7 +31,7 @@ ${TorchSeg}
         ├── midlines            # midline gt for PSPNet2
 ```
 
-### Base Models
+## Base Models
 ```bash
 ${TorchSeg}
 ├── baslines
@@ -50,6 +50,7 @@ ${TorchSeg}
         ├── crfasrnn r101
 ```
 
+### Training
 For each model, you can train the model after properly setting up `config.py`
 ```bash
 python train.py -d 0
@@ -57,6 +58,7 @@ python train.py -d 0
 # python train.py -d 0 --snapshot_dir <ckpt_path> --lr_crf <CRF_learning_rate>
 ```
 
+### Evaluation on validation set
 The checkpoints would be saved and we can evaluate the performance on validation set
 ```bash
 python eval.py -e <epoch_num> -p <save_path>
@@ -64,12 +66,14 @@ python eval.py -e <epoch_num> -p <save_path>
 
 For validation over many checkpoints, we can make minor modification in `eval_all.py` and run it without cmd line arguments.
 
+### Inference on test set
 For make predictions on the test data, we can run the following script
 ```bash
 python pred.py -e <epoch_num> -p <pred_save_path>
 ```
 and the predicted probability maps would be saved.
 
+### Submission to Kaggle
 For make submissions on the kaggle server, go to the `model` directory
 ```
 python mask_to_submission.py -p <pred_save_path> -n <submission_fname>
