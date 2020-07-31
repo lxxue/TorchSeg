@@ -20,11 +20,11 @@ conda install easydict tqdm opencv matplotlib
 ### Download ResNet weight
 
 Download the following two checkpoints into `model_zoo` dir
-'''bash
+```bash
 cd ${TorchSeg}
 mkdir model_zoo
 cd model_zoo
-'''
+```
 
 * [ResNet50](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
 * [ResNet101](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
