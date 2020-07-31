@@ -73,7 +73,11 @@ python pred.py -e <epoch_num> -p <pred_save_path>
 ```
 and the predicted probability maps would be saved.
 
-### Submission to Kaggle
+### Post-processing
+
+To be added.
+
+## Submission to Kaggle
 For make submissions on the kaggle server, go to the `model` directory
 ```
 python mask_to_submission.py -p <pred_save_path> -n <submission_fname>
