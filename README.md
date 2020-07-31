@@ -1,6 +1,7 @@
 # CIL Road Segmentation Project
 
-Team Member: Lixin Xue, Yu Fei, Hongjie Chen, Shengze Jin
+Team Member: Mathias Vetsch
+Team Name: LaughingStonebraker
 
 Code for [CIL Road Segmentation Project](https://www.kaggle.com/c/cil-road-segmentation-2020/) based on [TorchSeg](https://github.com/ycszen/TorchSeg), a semantic segmentation codebase in PyTorch.
 
