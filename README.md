@@ -8,8 +8,11 @@ Code for [CIL Road Segmentation Project](https://www.kaggle.com/c/cil-road-segme
 
 ### Create conda environment
 ```shell
-conda env create -f environment.yml
-conda activate cil
+# install pytorch as instructed on pytorch.org
+conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
+
+# install easydict
+conda install easydict tqdm opencv matplotlib
 ```
 
 ### Download ResNet weight
