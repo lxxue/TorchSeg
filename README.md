@@ -12,7 +12,9 @@ conda env create -f environment.yml
 conda activate cil
 ```
 
-### Download ResNet pretrained weight into `model_zoo` dir
+### Download ResNet weight
+
+Download the following two checkpoints into `model_zoo` dir
 
 * [ResNet50](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
 * [ResNet101](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
