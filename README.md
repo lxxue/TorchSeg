@@ -9,7 +9,7 @@ Code for [CIL Road Segmentation Project](https://www.kaggle.com/c/cil-road-segme
 ## Environment Setup
 
 ### Create conda environment
-```shell
+```bash
 # install pytorch as instructed on pytorch.org
 conda install pytorch torchvision cudatoolkit=10.2 -c pytorch
 
@@ -20,6 +20,11 @@ conda install easydict tqdm opencv matplotlib
 ### Download ResNet weight
 
 Download the following two checkpoints into `model_zoo` dir
+'''bash
+cd ${TorchSeg}
+mkdir model_zoo
+cd model_zoo
+'''
 
 * [ResNet50](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
 * [ResNet101](https://drive.google.com/file/d/1iEshXXzI3tCexo2CH92TNNOyizf2R_db/view?usp=sharing)
@@ -70,6 +75,14 @@ python eval.py -e <epoch_num> -p <save_path>
 ```
 
 For validation over many checkpoints, we can make minor modification in `eval_all.py` and run it without cmd line arguments.
+
+We provide one checkpoint for each model through [polybox](https://polybox.ethz.ch/index.php/s/G5wRD4Raoj5Txy7). After unzip the file, just put the checkpoint into its corresponding model's `log/snapshot` directory and rename it to `epoch-xxxx.pth`, for example
+```
+mv cil_ckpts/pspnet2_R101_epoch-2800.pth ${TorchSeg}/model/cil.pspnet2.R101/log/snapshot/epoch-2800.pth
+cd ${TorchSeg}/model/cil.pspnet2.R101/
+python eval.py -e 2800 -p results_eval/epoch2800
+```
+
 
 ### Inference on test set
 For make predictions on the test data, we can run the following script
