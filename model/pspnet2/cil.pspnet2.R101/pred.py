@@ -78,7 +78,7 @@ if __name__ == "__main__":
     dev = torch.device("cuda:0")
 
     network = PSPNet2(config.num_classes, criterion=None, is_training=False)
-    weights = torch.load(os.path.join("log", "snapshot", "epoch-{}.pth".format(args.epochs)))['model']
+    weights = torch.load(os.path.join("log", "all_snapshot", "epoch-{}.pth".format(args.epochs)))['model']
     network.load_state_dict(weights)
     network.to(dev)
     data_setting = {'img_root': config.img_root_folder,

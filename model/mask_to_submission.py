@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     submission_filename = args.name + '.csv'
     image_filenames = []
-    for i in glob.glob(args.image_path + '*png'):
+    for i in glob.glob(os.path.join(args.image_path, '*png')):
         image_filenames.append(i)
     
 
