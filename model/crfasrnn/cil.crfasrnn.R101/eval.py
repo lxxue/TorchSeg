@@ -77,12 +77,12 @@ if __name__ == "__main__":
     weights = torch.load(os.path.join("log", "snapshot_{}".format(args.learning_rate), "epoch-{}.pth".format(args.epochs)))['model']
     network.load_state_dict(weights)
     network.to(dev)
+    network.crfrnn.to(torch.device('cpu'))
     data_setting = {'img_root': config.img_root_folder,
                     'gt_root': config.gt_root_folder,
                     'train_source': config.train_source,
                     'eval_source': config.eval_source,
                     'test_source': config.test_source}
-    network.crfrnn.to(torch.device('cpu'))
     dataset = CIL(data_setting, 'val', preprocess=EvalPre(config.image_mean, config.image_std))
     dataloader = torch.utils.data.DataLoader(
         dataset,
@@ -93,7 +93,10 @@ if __name__ == "__main__":
         pin_memory=True)
     
     criterion = torch.nn.CrossEntropyLoss(reduction='mean')
+<<<<<<< HEAD
     # criterion = torch.nn.BCELoss(reduction='mean')
+=======
+>>>>>>> 7b2adb759658bdb1044149a26c24f43de6ba157f
     loss = np.zeros((len(dataloader),))
 
     pred_patch1 = []
@@ -118,12 +121,8 @@ if __name__ == "__main__":
             fmap = network(img)
 
             score = F.softmax(fmap, dim=1)
-            # score = fmap
             # print(fmap)
 
-            # print(fmap.shape)
-            # print(gt.shape)
-            # loss[i] = criterion(fmap[:, 1, :, :], gt).item()
             loss[i] = criterion(fmap, gt).item()
             # print(loss.item())
             heatmap = (score[0, 1].cpu().numpy() * 255).astype(np.uint8)
