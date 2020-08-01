@@ -1,6 +1,7 @@
 # CIL Road Segmentation Project
 
-Team Member: Lixin Xue, Yu Fei, Hongjie Chen, Shengze Jin
+Team Member: Mathias Vetsch
+Team Name: LaughingStonebraker
 
 [github repo](https://github.com/lxxue/TorchSeg)
 
